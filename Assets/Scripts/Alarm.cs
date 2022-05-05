@@ -11,7 +11,6 @@ public class Alarm : MonoBehaviour
     private float _runningTime;
     private float _normilizeRunningTime;
     private float _currentVolume;
-    private float _targetVolume;
 
     private void Awake()
     {
@@ -22,6 +21,7 @@ public class Alarm : MonoBehaviour
     {
         if (other.GetComponent<Player>())
         {
+            var alarm = StartCoroutine(ChangeValueAlarm(1f));
             _alarmSound.Play();
         }
     }
@@ -30,37 +30,24 @@ public class Alarm : MonoBehaviour
     {
         if (other.GetComponent<Player>())
         {
-            _alarmSound.Stop();
+            var alarm = StartCoroutine(ChangeValueAlarm(0f));
+            if (_currentVolume == 0f)
+                _alarmSound.Stop();
         }
     }
 
-
-
-    private void Update()
+    private IEnumerator ChangeValueAlarm(float targetVolume)
     {
-        ChangeValueAlarm();
-    }
-
-    private void ChangeValueAlarm()
-    {
-        _runningTime += Time.deltaTime;
-        _normilizeRunningTime = _runningTime / _duration;
-        _currentVolume = _alarmSound.volume;
-
-        if (_currentVolume == 0)
+        _runningTime = 0;
+        while (_currentVolume != targetVolume)
         {
-            _runningTime = 0f;
-            _targetVolume = 1f;
-        }
-        else if (_currentVolume == 1f)
-        {
-            _runningTime = 0f;
-            _targetVolume = 0f;
-        }
+            _runningTime += Time.deltaTime;
+            _normilizeRunningTime = _runningTime / _duration;
+            _currentVolume = _alarmSound.volume;
 
-        _alarmSound.volume = Mathf.MoveTowards(_currentVolume, _targetVolume, _normilizeRunningTime * Time.deltaTime);
+            _alarmSound.volume = Mathf.MoveTowards(_currentVolume, targetVolume, _normilizeRunningTime * Time.deltaTime);
 
-        Debug.Log(_normilizeRunningTime);
+            yield return null;
+        }
     }
-
 }
